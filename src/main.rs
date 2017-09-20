@@ -94,13 +94,19 @@ trait Expressable {
 }
 
 impl Expressable for Expression {
-    fn evaluate_f64(&self, _:&Assignment) -> Option<f64> {
+    fn evaluate_f64(&self, a:&Assignment) -> Option<f64> {
+        match self.clone() {
+            Expression::Var(v) => {return v.evaluate_f64(a);},
+            Expression::Const(c) => {return c.evaluate_f64(a);},
+        }
+        println!("Expressable not implemented for this");
         None
     }
 }
 
 impl Expressable for TermSum {
     fn evaluate_f64(&self, a: &Assignment) -> Option<f64> {
+        println!("Evaluating TermSum!");
         // Evaluate all Terms and add
         let mut result = 0f64;
         for i in 0..self.terms.len() {
@@ -117,6 +123,7 @@ impl Expressable for TermSum {
 
 impl Expressable for Term {
     fn evaluate_f64(&self, a: &Assignment) -> Option<f64> {
+        println!("Evaluating Term!");
         // If there are no terms return 0
         if self.basic_terms.len() == 0 { return Some(0f64); }
         
@@ -136,6 +143,7 @@ impl Expressable for Term {
 
 impl Expressable for BasicTerm {
     fn evaluate_f64(&self, a: &Assignment) -> Option<f64> {
+        println!("Evaluating Basic Term!");
         // TODO special cases (ex. power = 0, base =/= 0, ans = 1)
         if let (Some(base), Some(power)) = (self.base.evaluate_f64(a),self.power.evaluate_f64(a)) {
             return Some(base.powf(power));
@@ -146,6 +154,7 @@ impl Expressable for BasicTerm {
 
 impl Expressable for Variable {
     fn evaluate_f64(&self, a: &Assignment) -> Option<f64> {
+        println!("Evaluating variable!");
         if self.name == a.var.name {
             return a.constant.evaluate_f64(a);
         }
@@ -155,6 +164,7 @@ impl Expressable for Variable {
 
 impl Expressable for Constant {
     fn evaluate_f64(&self, _: &Assignment) -> Option<f64> {
+        println!("Evaluating constant!");
         match *self {
             Constant::E => Some(std::f64::consts::E),
             Constant::Pi => Some(std::f64::consts::PI),
@@ -166,6 +176,7 @@ impl Expressable for Constant {
 
 impl Expressable for Function {
     fn evaluate_f64(&self, a: &Assignment) -> Option<f64> {
+        println!("Evaluating function!");
         let f = self.args.evaluate_f64(a);
         match self.func_type.clone() { // TODO: Another way to avoid borrowing here?
             FunctionType::Pow(power) => {
@@ -203,7 +214,7 @@ fn main() {
     let assignment = Assignment {var: x_var, constant: three };
     let ans = f.evaluate_f64(&assignment);
     if let Some(ans) = ans {
-        println!("2(3)^2 = {}", ans);
+        println!("3^2 = {}", ans);
     } 
     else {
         println!("Couldn't be calculated");
