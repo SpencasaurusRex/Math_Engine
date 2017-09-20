@@ -1,0 +1,6 @@
+[package]
+version = "0.1.0"
+authors = ["Spencer Haney <theOfficialSkara@gmail.com>"]
+
+[dependencies]
+num = "0.1.40"
