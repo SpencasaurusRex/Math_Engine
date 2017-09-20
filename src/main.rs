@@ -65,6 +65,7 @@ struct Assignment {
     constant: Constant
 }
 
+// TODO derive printable for basic structs
 impl Constant {
     fn as_expression(&self) -> Expression {
         Expression::Const(self.clone())
@@ -90,10 +91,12 @@ impl Variable {
 }
 
 trait Expressable {
+    // TODO change to be vector of assignments
     fn evaluate_f64(&self, _:&Assignment) -> Option<f64>;
 }
 
 impl Expressable for Expression {
+    // TODO do this generically?
     fn evaluate_f64(&self, a:&Assignment) -> Option<f64> {
         match self.clone() {
             Expression::Var(v) => {return v.evaluate_f64(a);},
@@ -208,13 +211,15 @@ impl Expression {
 fn main() {
     // f(x) = 2x^2
     let x_var = Variable {name: "x".to_string()};
-    let two = Constant::Int(2).to_expression();
-    let f = BasicTerm{base: x_var.as_expression(), power: two};
-    let three = Constant::Int(3);
-    let assignment = Assignment {var: x_var, constant: three };
-    let ans = f.evaluate_f64(&assignment);
+    let pow = Constant::E;
+    let expression = BasicTerm{base: x_var.as_expression(), power: pow.as_expression()};
+    
+    // Eval at x = pi
+    let pi = Constant::Pi;
+    let assignment = Assignment {var: x_var, constant: pi };
+    let ans = expression.evaluate_f64(&assignment);
     if let Some(ans) = ans {
-        println!("3^2 = {}", ans);
+        println!("pi^e = {}", ans);
     } 
     else {
         println!("Couldn't be calculated");
