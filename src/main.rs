@@ -206,12 +206,18 @@ impl Expression {
     /// Where TermSum > Term > BasicTerm > [Variable, Constant, Function]
     pub fn simplify_type (&self) -> Expression {
         // TODO implement
+        match *self {
+            Expression::Variable(ref v) => {
+                
+            }
+            _ => {}
+        }
+
         self.clone()    
     }
 }
 
 fn concat_string_err<T>(a: Result<T, String>, b: Result<T, String>) -> Result<T, String>{
-    let mut err : String;
     match (a, b) {
         (Ok(_), Ok(_)) => { panic!("Expected at least one error") },
         (Ok(_), Err(b)) => { return Err(b); },
@@ -225,9 +231,19 @@ fn main() {
     // f(x) = 2x^2
     let x_var = Variable {name: "x".to_string()};
     let pow = Constant::E;
-    let expression = BasicTerm{
+    let two = Constant::Int(2);
+    let one = Constant::Int(1);
+
+    let two = BasicTerm {
+        base: Box::new(two.as_expression()),
+        power: Box::new(one.as_expression()),
+    };
+    let x_squared = BasicTerm {
         base: Box::new(x_var.as_expression()), 
         power: Box::new(pow.as_expression())
+    };
+    let expression = Term {
+        basic_terms: vec![two, x_squared],
     };
     
     // Eval at x = pi
@@ -235,7 +251,7 @@ fn main() {
     let assignment = Assignment {var: x_var, constant: pi };
     let ans = expression.evaluate_f64(&assignment);
     if let Ok(ans) = ans {
-        println!("pi^e = {}", ans);
+        println!("2(pi^e) = {}", ans);
     } 
     else if let Err(err) = ans {
         println!("{}", err);
