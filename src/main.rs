@@ -1,6 +1,6 @@
 /// Anything (Expression or smaller) that can be evaluated
 pub trait Evaluate {
-    // TODO change to be vector of assignments
+    fn evaluate_f64(&self, _:&Vec<Assignment>) -> Result<f64,String>;
 }
 
 /// A value without an associated variable
@@ -24,6 +24,7 @@ impl Constant {
 }
 
 impl Evaluate for Constant {
+    fn evaluate_f64(&self, _: &Vec<Assignment>) -> Result<f64,String> {
         println!("Evaluating constant!");
         match *self {
             Constant::E => Ok(std::f64::consts::E),
@@ -104,6 +105,7 @@ impl Variable {
 }
 
 impl Evaluate for Expression {
+    fn evaluate_f64(&self, a:&Vec<Assignment>) -> Result<f64,String> {
         match self.clone() { 
             Expression::Variable(v) => {return v.evaluate_f64(a);},
             Expression::Constant(c) => {return c.evaluate_f64(a);},
@@ -114,6 +116,7 @@ impl Evaluate for Expression {
 }
 
 impl Evaluate for TermSum {
+    fn evaluate_f64(&self, a: &Vec<Assignment>) -> Result<f64,String> {
         println!("Evaluating TermSum!");
         // Evaluate all Terms and add
         let mut result = 0f64;
@@ -131,6 +134,7 @@ impl Evaluate for TermSum {
 }
 
 impl Evaluate for Term {
+    fn evaluate_f64(&self, a: &Vec<Assignment>) -> Result<f64,String> {
         println!("Evaluating Term!");
         // If there are no terms return 0
         if self.basic_terms.len() == 0 { return Ok(0f64); }
@@ -151,6 +155,7 @@ impl Evaluate for Term {
 }
 
 impl Evaluate for BasicTerm {
+    fn evaluate_f64(&self, a: &Vec<Assignment>) -> Result<f64,String> {
         println!("Evaluating Basic Term!");
         // TODO special cases (ex. power = 0, base =/= 0, ans = 1)
         let base_eval = self.base.evaluate_f64(a);
@@ -163,7 +168,12 @@ impl Evaluate for BasicTerm {
 }
 
 impl Evaluate for Variable {
+    fn evaluate_f64(&self, assignments: &Vec<Assignment>) -> Result<f64,String> {
         println!("Evaluating variable!");
+        for assignment in assignments.iter() {
+            if self.name == assignment.var.name {
+                return assignment.constant.evaluate_f64(assignments);
+            }
         }
         // TODO provide more info
         Err ("Incorrect variable supplied".to_string())
@@ -171,6 +181,7 @@ impl Evaluate for Variable {
 }
 
 impl Evaluate for Function {
+    fn evaluate_f64(&self, a: &Vec<Assignment>) -> Result<f64,String> {
         println!("Evaluating function!");
         let f = self.args.evaluate_f64(a);
         match self.func_type.clone() { // TODO: Another way to avoid borrowing here?
@@ -239,6 +250,7 @@ fn main() {
     // Eval at x = pi
     let pi = Constant::Pi;
     let assignment = Assignment {var: x_var, constant: pi };
+    let ans = expression.evaluate_f64(&vec![assignment]);
     if let Ok(ans) = ans {
         println!("2(pi^e) = {}", ans);
     } 
