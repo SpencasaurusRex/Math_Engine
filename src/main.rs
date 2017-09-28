@@ -1,3 +1,5 @@
+use std::fmt;
+
 /// Anything (Expression or smaller) that can be evaluated
 pub trait Evaluate {
     fn evaluate_f64(&self, _:&Vec<Assignment>) -> Result<f64,String>;
@@ -25,12 +27,23 @@ impl Constant {
 
 impl Evaluate for Constant {
     fn evaluate_f64(&self, _: &Vec<Assignment>) -> Result<f64,String> {
-        println!("Evaluating constant!");
+        println!("Evaluating {}", self);
         match *self {
             Constant::E => Ok(std::f64::consts::E),
             Constant::Pi => Ok(std::f64::consts::PI),
             Constant::Decimal(x) => Ok(x),
             Constant::Int(x) => Ok(x as f64),
+        }
+    }
+}
+
+impl fmt::Display for Constant {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            Constant::E => write!(f, "e"),
+            Constant::Pi => write!(f, "pi"),
+            Constant::Decimal(x) => write!(f, "{}", x.to_string()),
+            Constant::Int(x) => write!(f, "{}", x.to_string())
         }
     }
 }
@@ -44,63 +57,19 @@ pub enum Expression {
     TermSum(TermSum),
 }
 
-/// Two TermSums set equal
-#[derive(Clone)]
-pub struct Equation {
-    left:  Expression,
-    right: Expression,
-}
+impl Expression {
+    /// Converts to smallest type possible
+    /// Where TermSum > Term > BasicTerm > [Variable, Constant, Function]
+    pub fn simplify_type (&self) -> Expression {
+        // TODO implement
+        match *self {
+            Expression::Variable(ref v) => {
+                
+            }
+            _ => {}
+        }
 
-// A collection of terms to be added
-#[derive(Clone)]
-pub struct TermSum {
-    terms: Vec<Term>
-}
-
-/// A collection of basic terms to be multiplied
-#[derive(Clone)]
-pub struct Term {
-    basic_terms: Vec<BasicTerm>
-}
-
-/// An elemental to a power (ex: x^2)
-#[derive(Clone)]
-pub struct BasicTerm {
-    base: Box<Expression>,
-    power: Box<Expression>
-}
-
-#[derive(Clone)]
-pub struct Function{
-    args: Expression,
-    func_type: FunctionType
-}
-
-#[derive(Clone)]
-pub struct Variable {
-    name: String
-}
-
-#[derive(Clone)]
-pub enum FunctionType{
-    Pow(Expression),
-    Inverse,
-    // TODO a LOT more functions to come, (trig, derivative, integral, def. integral, log, ln, abs, etc..)
-}
-
-#[derive(Clone)]
-pub struct Assignment {
-    var: Variable,
-    constant: Constant
-}
-
-impl Variable {
-    pub fn as_expression(&self) -> Expression {
-        Expression::Variable(self.clone())
-    }
-
-    pub fn to_expression(self) -> Expression {
-        Expression::Variable(self)
+        self.clone()    
     }
 }
 
@@ -115,13 +84,47 @@ impl Evaluate for Expression {
     }
 }
 
+impl fmt::Display for Expression {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            Expression::Constant(c) => c.fmt(f),
+            Expression::Variable(v) => v.fmt(f),
+            Expression::BasicTerm(b) => b.fmt(f),
+            Expression::TermSum(t) => t.fmt(t),
+        }
+    }
+}
+
+/// Two Expressions set equal
+#[derive(Clone)]
+pub struct Equation {
+    left:  Expression,
+    right: Expression,
+}
+
+// A collection of terms to be added
+#[derive(Clone)]
+pub struct TermSum {
+    terms: Vec<Term>
+}
+
+impl fmt::Display for TermSum {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut result = "".to_string();
+        write!(f, "")
+        // TODO: for term in self.terms.iter() {
+        //     result += format!("{}", term);
+        // }
+    }
+}
+
 impl Evaluate for TermSum {
     fn evaluate_f64(&self, a: &Vec<Assignment>) -> Result<f64,String> {
         println!("Evaluating TermSum!");
         // Evaluate all Terms and add
         let mut result = 0f64;
-        for i in 0..self.terms.len() {
-            let eval = self.terms[i].evaluate_f64(a);
+        for term in self.terms.iter() {
+            let eval = term.evaluate_f64(a);
             if let Ok(x) = eval {
                 result += x;
             }
@@ -130,6 +133,20 @@ impl Evaluate for TermSum {
             }
         }
         Ok(result)
+    }
+}
+
+/// A collection of basic terms to be multiplied
+#[derive(Clone)]
+pub struct Term {
+    basic_terms: Vec<BasicTerm>
+}
+
+impl fmt::Display for Term {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "potato") //TODO implement
+        // for basic_term in self.basic_terms.iter() {
+        // }
     }
 }
 
@@ -154,9 +171,23 @@ impl Evaluate for Term {
     }
 }
 
+/// An elemental to a power (ex: x^2)
+#[derive(Clone)]
+pub struct BasicTerm {
+    base: Box<Expression>,
+    power: Box<Expression>
+}
+
+impl fmt::Display for BasicTerm {
+    fn fmt (&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "")
+        //TODO: write!(f, "({})^({})", Box::into_raw(self.base), Box::into_raw(self.power))
+    }
+}
+
 impl Evaluate for BasicTerm {
     fn evaluate_f64(&self, a: &Vec<Assignment>) -> Result<f64,String> {
-        println!("Evaluating Basic Term!");
+        println!("Evaluating {}", self);
         // TODO special cases (ex. power = 0, base =/= 0, ans = 1)
         let base_eval = self.base.evaluate_f64(a);
         let power_eval = self.power.evaluate_f64(a);
@@ -167,9 +198,30 @@ impl Evaluate for BasicTerm {
     }
 }
 
+#[derive(Clone)]
+pub struct Function{
+    args: Expression,
+    func_type: FunctionType
+}
+
+#[derive(Clone)]
+pub struct Variable {
+    name: String
+}
+
+impl Variable {
+    pub fn as_expression(&self) -> Expression {
+        Expression::Variable(self.clone())
+    }
+
+    pub fn to_expression(self) -> Expression {
+        Expression::Variable(self)
+    }
+}
+
 impl Evaluate for Variable {
     fn evaluate_f64(&self, assignments: &Vec<Assignment>) -> Result<f64,String> {
-        println!("Evaluating variable!");
+        println!("Evaluating {}", self);
         for assignment in assignments.iter() {
             if self.name == assignment.var.name {
                 return assignment.constant.evaluate_f64(assignments);
@@ -180,9 +232,28 @@ impl Evaluate for Variable {
     }
 }
 
+impl fmt::Display for Variable {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.name)
+    }
+}
+
+#[derive(Clone)]
+pub enum FunctionType{
+    Pow(Expression),
+    Inverse,
+    // TODO a LOT more functions to come, (trig, derivative, integral, def. integral, log, ln, abs, etc..)
+}
+
+#[derive(Clone)]
+pub struct Assignment {
+    var: Variable,
+    constant: Constant
+}
+
 impl Evaluate for Function {
     fn evaluate_f64(&self, a: &Vec<Assignment>) -> Result<f64,String> {
-        println!("Evaluating function!");
+        // println!("Evaluating {}!");
         let f = self.args.evaluate_f64(a);
         match self.func_type.clone() { // TODO: Another way to avoid borrowing here?
             FunctionType::Pow(power) => {
@@ -199,22 +270,6 @@ impl Evaluate for Function {
                 f
             }
         }
-    }
-}
-
-impl Expression {
-    /// Converts to smallest type possible
-    /// Where TermSum > Term > BasicTerm > [Variable, Constant, Function]
-    pub fn simplify_type (&self) -> Expression {
-        // TODO implement
-        match *self {
-            Expression::Variable(ref v) => {
-                
-            }
-            _ => {}
-        }
-
-        self.clone()    
     }
 }
 
