@@ -53,8 +53,9 @@ impl fmt::Display for Constant {
 pub enum Expression {
     Constant(Constant),
     Variable(Variable),
-    BasicTerm(BasicTerm),
     TermSum(TermSum),
+    Term(Term),
+    BasicTerm(BasicTerm),
 }
 
 impl Expression {
@@ -63,8 +64,17 @@ impl Expression {
     pub fn simplify_type (&self) -> Expression {
         // TODO implement
         match *self {
-            Expression::Variable(ref v) => {
-                
+            Expression::TermSum(ref t) => {
+                if t.terms.len() == 0 {
+                    return Expression::Constant(Constant::Int(0));
+                }
+                else if t.terms.len() == 1 {
+                    let term = t.terms.first();
+                    if let Some(term) = term {
+                        // TODO: Avoid clone here
+                        return Expression::Term(term.clone()).simplify_type(); 
+                    }
+                }
             }
             _ => {}
         }
@@ -80,6 +90,7 @@ impl Evaluate for Expression {
             Expression::Constant(c) => {return c.evaluate_f64(a);},
             Expression::BasicTerm(b) => {return b.evaluate_f64(a);},
             Expression::TermSum(t) => {return t.evaluate_f64(a);},
+            Expression::Term(t) => {return t.evaluate_f64(a);},
         }
     }
 }
@@ -87,10 +98,11 @@ impl Evaluate for Expression {
 impl fmt::Display for Expression {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            Expression::Constant(c) => c.fmt(f),
-            Expression::Variable(v) => v.fmt(f),
-            Expression::BasicTerm(b) => b.fmt(f),
-            Expression::TermSum(t) => t.fmt(t),
+            Expression::Constant(ref c) => c.fmt(f),
+            Expression::Variable(ref v) => v.fmt(f),
+            Expression::BasicTerm(ref b) => b.fmt(f),
+            Expression::TermSum(ref t) => t.fmt(f),
+            Expression::Term(ref t) => t.fmt(f),
         }
     }
 }
@@ -111,16 +123,21 @@ pub struct TermSum {
 impl fmt::Display for TermSum {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut result = "".to_string();
-        write!(f, "")
-        // TODO: for term in self.terms.iter() {
-        //     result += format!("{}", term);
-        // }
+        for (i, term) in self.terms.iter().enumerate() {
+            if i == 0 {
+                result = format!("{}", term);
+            }
+            else {
+                result = format!("{} + {}", term, result)
+            }
+        }
+        write!(f, "{}", result)
     }
 }
 
 impl Evaluate for TermSum {
     fn evaluate_f64(&self, a: &Vec<Assignment>) -> Result<f64,String> {
-        println!("Evaluating TermSum!");
+        println!("Evaluating {}", self);
         // Evaluate all Terms and add
         let mut result = 0f64;
         for term in self.terms.iter() {
@@ -144,15 +161,22 @@ pub struct Term {
 
 impl fmt::Display for Term {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "potato") //TODO implement
-        // for basic_term in self.basic_terms.iter() {
-        // }
+        let mut result = "".to_string();
+        for (i, basic_term) in self.basic_terms.iter().enumerate() {
+            if i == 0 {
+                result = format!("{}", basic_term);
+            }
+            else {
+                result = format!("{}*{}", result, basic_term);
+            }
+        }
+        write!(f, "{}", result)
     }
 }
 
 impl Evaluate for Term {
     fn evaluate_f64(&self, a: &Vec<Assignment>) -> Result<f64,String> {
-        println!("Evaluating Term!");
+        println!("Evaluating {}", self);
         // If there are no terms return 0
         if self.basic_terms.len() == 0 { return Ok(0f64); }
         
@@ -171,7 +195,7 @@ impl Evaluate for Term {
     }
 }
 
-/// An elemental to a power (ex: x^2)
+/// An expression to a power (ex: x^2)
 #[derive(Clone)]
 pub struct BasicTerm {
     base: Box<Expression>,
@@ -180,8 +204,12 @@ pub struct BasicTerm {
 
 impl fmt::Display for BasicTerm {
     fn fmt (&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "")
-        //TODO: write!(f, "({})^({})", Box::into_raw(self.base), Box::into_raw(self.power))
+        match *self.power {
+            Expression::Constant(Constant::Int(1)) => {
+                write!(f, "{}", *self.base)
+            }
+            _ => write!(f, "({})^({})", *self.base, *self.power)
+        }
     }
 }
 
@@ -289,25 +317,36 @@ fn main() {
     let pow = Constant::E;
     let two = Constant::Int(2);
     let one = Constant::Int(1);
+    let five = Constant::Int(5);
 
     let two = BasicTerm {
         base: Box::new(two.as_expression()),
+        power: Box::new(one.as_expression()),
+    };
+    let five = BasicTerm {
+        base: Box::new(five.as_expression()),
         power: Box::new(one.as_expression()),
     };
     let x_squared = BasicTerm {
         base: Box::new(x_var.as_expression()), 
         power: Box::new(pow.as_expression())
     };
-    let expression = Term {
+    let two_x_squared = Term {
         basic_terms: vec![two, x_squared],
+    };
+    let five = Term {
+        basic_terms: vec![five],
+    };
+    let two_x_squared_plus_five = TermSum {
+        terms: vec![two_x_squared, five]
     };
     
     // Eval at x = pi
     let pi = Constant::Pi;
     let assignment = Assignment {var: x_var, constant: pi };
-    let ans = expression.evaluate_f64(&vec![assignment]);
+    let ans = two_x_squared_plus_five.evaluate_f64(&vec![assignment]);
     if let Ok(ans) = ans {
-        println!("2(pi^e) = {}", ans);
+        println!("2(pi^e) + 5 = {}", ans);
     } 
     else if let Err(err) = ans {
         println!("{}", err);
