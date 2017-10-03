@@ -17,7 +17,7 @@ impl Variable {
 
 impl Evaluate for Variable {
     fn evaluate_f64(&self, assignments: &Vec<Assignment>) -> Result<f64,String> {
-        println!("Evaluating {}", self);
+        println!("Evaluating variable    {}", self);
         for assignment in assignments.iter() {
             if self.name == assignment.var.name {
                 return assignment.constant.evaluate_f64(assignments);

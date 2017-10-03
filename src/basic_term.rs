@@ -20,7 +20,7 @@ impl fmt::Display for BasicTerm {
 
 impl Evaluate for BasicTerm {
     fn evaluate_f64(&self, a: &Vec<Assignment>) -> Result<f64,String> {
-        println!("Evaluating {}", self);
+        println!("Evaluating basic term: {}", self);
         // TODO special cases (ex. power = 0, base =/= 0, ans = 1)
         let base_eval = self.base.evaluate_f64(a);
         let power_eval = self.power.evaluate_f64(a);

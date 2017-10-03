@@ -22,7 +22,6 @@ impl Constant {
 
 impl Evaluate for Constant {
     fn evaluate_f64(&self, _: &Vec<Assignment>) -> Result<f64,String> {
-        println!("Evaluating {}", self);
         match *self {
             Constant::E => Ok(std::f64::consts::E),
             Constant::Pi => Ok(std::f64::consts::PI),

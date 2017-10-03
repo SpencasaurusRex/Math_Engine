@@ -23,7 +23,7 @@ impl fmt::Display for Term {
 
 impl Evaluate for Term {
     fn evaluate_f64(&self, a: &Vec<Assignment>) -> Result<f64,String> {
-        println!("Evaluating {}", self);
+        println!("Evaluating term:       {}", self);
         // If there are no terms return 0
         if self.basic_terms.len() == 0 { return Ok(0f64); }
         
