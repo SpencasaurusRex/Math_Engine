@@ -11,12 +11,15 @@ pub enum Constant {
 }
 
 impl Constant {
+    /// Convert into expression, cloning to avoid losing ownership
     pub fn as_expression(&self) -> Expression {
-        Expression::Constant(self.clone())
+        self.clone().into()
     }
-    
-    pub fn to_expression(self) -> Expression {
-        Expression::Constant(self)
+}
+
+impl From<i32> for Constant {
+    fn from(c: i32) -> Constant {
+        Constant::Int(c)
     }
 }
 

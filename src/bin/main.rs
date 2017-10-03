@@ -2,41 +2,31 @@ extern crate math_engine;
 use math_engine::*;
 
 fn main() {
-    // f(x) = 2x^2
+
     let x_var = Variable {name: "x".to_string()};
     let pow = Constant::E;
-    let two = Constant::Int(2);
-    let one = Constant::Int(1);
-    let five = Constant::Int(5);
-
-    let two = BasicTerm {
-        base: Box::new(two.as_expression()),
-        power: Box::new(one.as_expression()),
+    let x_to_the_e = BasicTerm::new(x_var.clone(), pow);
+    let two = Expression::Constant(Constant::Int(2));
+    let two = BasicTerm::from(two);
+    // TODO: Continue replacing with constructors
+    let two_x_to_the_e = Term {
+        basic_terms: vec![two, x_to_the_e],
     };
-    let five = BasicTerm {
-        base: Box::new(five.as_expression()),
-        power: Box::new(one.as_expression()),
-    };
-    let x_squared = BasicTerm {
-        base: Box::new(x_var.as_expression()), 
-        power: Box::new(pow.as_expression())
-    };
-    let two_x_squared = Term {
-        basic_terms: vec![two, x_squared],
-    };
+    let five = Expression::Constant(Constant::Int(5));
+    let five = BasicTerm::from(five);
     let five = Term {
         basic_terms: vec![five],
     };
-    let two_x_squared_plus_five = TermSum {
-        terms: vec![two_x_squared, five]
+    let two_x_to_the_e_plus_five = TermSum {
+        terms: vec![two_x_to_the_e, five]
     };
     
     // Eval at x = pi
     let pi = Constant::Pi;
     let assignment = Assignment {var: x_var, constant: pi };
-    let ans = two_x_squared_plus_five.evaluate_f64(&vec![assignment]);
+    let ans = two_x_to_the_e_plus_five.evaluate_f64(&vec![assignment]);
     if let Ok(ans) = ans {
-        println!("2(pi^e) + 5 = {}", ans);
+        println!("2pi^e + 5 = {}", ans);
     } 
     else if let Err(err) = ans {
         println!("{}", err);

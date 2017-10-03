@@ -37,6 +37,36 @@ impl Expression {
     }
 }
 
+impl From<Constant> for Expression {
+    fn from(c: Constant) -> Expression {
+        Expression::Constant(c)
+    }
+}
+
+impl From<Variable> for Expression {
+    fn from(v: Variable) -> Expression {
+        Expression::Variable(v)
+    }
+}
+
+impl From<TermSum> for Expression {
+    fn from(t: TermSum) -> Expression {
+        Expression::TermSum(t)
+    }
+}
+
+impl From<Term> for Expression {
+    fn from(t: Term) -> Expression {
+        Expression::Term(t)
+    }
+}
+
+impl From<BasicTerm> for Expression {
+    fn from(b: BasicTerm) -> Expression {
+        Expression::BasicTerm(b)
+    }
+}
+
 impl Evaluate for Expression {
     fn evaluate_f64(&self, a:&Vec<Assignment>) -> Result<f64,String> {
         match self.clone() { 

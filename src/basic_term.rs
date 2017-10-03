@@ -3,8 +3,27 @@ use super::*;
 /// An expression to a power (ex: x^2)
 #[derive(Clone)]
 pub struct BasicTerm {
-    pub base: Box<Expression>,
-    pub power: Box<Expression>
+    base: Box<Expression>,
+    power: Box<Expression>
+}
+
+impl BasicTerm {
+    // TODO: Change this and other constructors to take references? (Will have to deal with lifetimes)
+    pub fn new<T: Into<Expression>, U: Into<Expression>>(base: T, pow: U) -> BasicTerm {
+        BasicTerm {
+            base: Box::new(base.into()),
+            power: Box::new(pow.into()),
+        }
+    }
+}
+
+impl From<Expression> for BasicTerm {
+    fn from(exp: Expression) -> BasicTerm {
+        BasicTerm {
+            base: Box::new(exp.into()),
+            power: Box::new(Expression::Constant(Constant::Int(1))),
+        }
+    }
 }
 
 impl fmt::Display for BasicTerm {
