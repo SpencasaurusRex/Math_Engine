@@ -5,3 +5,4 @@ authors = ["Spencer Haney <theOfficialSkara@gmail.com>"]
 
 [dependencies]
 num = "0.1.40"
+assert_approx_eq = "1.0.0"

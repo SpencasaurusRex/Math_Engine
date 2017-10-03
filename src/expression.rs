@@ -17,9 +17,11 @@ impl Expression {
         // TODO implement
         match *self {
             Expression::TermSum(ref t) => {
+                // A TermSum with 0 terms is simply 0
                 if t.terms.len() == 0 {
                     return Expression::Constant(Constant::Int(0));
                 }
+                // A TermSum with 1 term is simply that term
                 else if t.terms.len() == 1 {
                     let term = t.terms.first();
                     if let Some(term) = term {
