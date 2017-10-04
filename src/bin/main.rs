@@ -9,17 +9,11 @@ fn main() {
     let two = Expression::Constant(Constant::Int(2));
     let two = BasicTerm::from(two);
     // TODO: Continue replacing with constructors
-    let two_x_to_the_e = Term {
-        basic_terms: vec![two, x_to_the_e],
-    };
+    let two_x_to_the_e = Term::new(vec![two, x_to_the_e]);
     let five = Expression::Constant(Constant::Int(5));
     let five = BasicTerm::from(five);
-    let five = Term {
-        basic_terms: vec![five],
-    };
-    let two_x_to_the_e_plus_five = TermSum {
-        terms: vec![two_x_to_the_e, five]
-    };
+    let five = Term::from(five);
+    let two_x_to_the_e_plus_five = TermSum::new(vec![two_x_to_the_e, five]);
     
     // Eval at x = pi
     let pi = Constant::Pi;

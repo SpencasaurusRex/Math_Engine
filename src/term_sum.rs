@@ -6,6 +6,20 @@ pub struct TermSum {
     pub terms: Vec<Term>
 }
 
+impl TermSum {
+    pub fn new(terms: Vec<Term>) -> TermSum {
+        TermSum {
+            terms: terms,
+        }
+    }
+}
+
+impl From<Term> for TermSum {
+    fn from(term: Term) -> TermSum {
+        TermSum::new(vec![term])
+    }
+}
+
 impl fmt::Display for TermSum {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut result = "".to_string();

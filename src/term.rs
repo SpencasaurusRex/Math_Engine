@@ -3,7 +3,21 @@ use super::*;
 /// A collection of basic terms to be multiplied
 #[derive(Clone)]
 pub struct Term {
-    pub basic_terms: Vec<BasicTerm>
+    basic_terms: Vec<BasicTerm>
+}
+
+impl Term {
+    pub fn new(basic_terms: Vec<BasicTerm>) -> Term {
+        Term {
+            basic_terms: basic_terms,
+        }
+    }
+}
+
+impl From<BasicTerm> for Term {
+    fn from(b: BasicTerm) -> Term {
+        Term::new(vec![b])
+    }
 }
 
 impl fmt::Display for Term {
