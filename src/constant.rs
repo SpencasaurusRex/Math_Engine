@@ -44,3 +44,19 @@ impl fmt::Display for Constant {
         }
     }
 }
+
+impl PartialEq<Self> for Constant {
+    fn eq(&self, other: &Constant) -> bool {
+        match (self, other) {
+            (&Constant::Int(a), &Constant::Int(b)) => a == b,
+            (&Constant::Decimal(a), &Constant::Decimal(b)) => a == b,
+            (&Constant::Pi, &Constant::Pi) => true,
+            (&Constant::E, &Constant::E) => true,
+            _ => false,
+        }
+    }
+
+    fn ne(&self, other: &Constant) -> bool {
+        !self.eq(other)
+    }
+} 
